@@ -1,0 +1,14 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+@import "tailwindcss";
+@import 'leaflet/dist/leaflet.css';
+
+/* const handleLogout = () => {
+  localStorage.removeItem("jwt"); // supprime le token
+  window.location.href = "/login"; // redirige vers login
+}; */
+
+
+/* Optionnel : Import de Bootstrap après les directives Tailwind */
+@import 'bootstrap/dist/css/bootstrap.min.css';
