@@ -4,6 +4,47 @@ import PollChoice from "../components/PollChoice";
 import { Calendar, MapPin, Clock, CheckCircle, XCircle, HelpCircle, AlertCircle, BarChart3, Map } from "lucide-react";
 import MapModal from '../components/MapModal';
 
+
+// --- Composant Avatar ---
+const Avatar = ({ user, src, name, size = 10 }) => {
+    // Détermine la vraie source de l'image
+    const profileSrc = src 
+        ? `http://localhost:8000${src}`
+        : user?.profilePicture 
+            ? `http://localhost:8000${user.profilePicture}`
+            : null;
+
+    const displayName = name || user?.name || "?";
+    const initial = displayName.charAt(0).toUpperCase();
+
+    if (profileSrc) {
+        return (
+            <img
+                src={profileSrc}
+                alt="Profil"
+                className={`rounded-full object-cover `}
+                style={{
+                    width: `${size * 4}px`,
+                    height: `${size * 4}px`,
+                }}
+            />
+        );
+    }
+
+    return (
+        <div
+            className={`rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold flex items-center justify-center border-2 border-purple-400`}
+            style={{
+                width: `${size * 4}px`,
+                height: `${size * 4}px`,
+                fontSize: `${size * 1.5}px`
+            }}
+        >
+            {initial}
+        </div>
+    );
+};
+
 const Invitations = ({ userEmail, onNotificationUpdate }) => {
   const { invitations, loading, error, setInvitations, reloadInvitations } = useInvitations(userEmail);
   const [pollState, setPollState] = useState({});
@@ -257,10 +298,25 @@ const Invitations = ({ userEmail, onNotificationUpdate }) => {
             {/* Header avec gradient */}
             <div className="bg-gradient-to-r from-purple-600/5 via-blue-600/5 to-pink-600/5 border-b border-gray-100 p-6">
               <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{event.title}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">{event.description || "Pas de description"}</p>
-                </div>
+                <div>
+    {/* Profil de l’organisateur */}
+    <div className="flex items-center gap-3 mb-3">
+      <Avatar 
+        user={inv.organizer} 
+        src={inv.organizer?.profilePicture} 
+        name={inv.organizer?.name} 
+        size={10} 
+      />
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500">Organisateur</span>
+        <span className="font-semibold text-gray-900">{inv.organizer?.name || "Inconnu"}</span>
+      </div>
+    </div>
+
+    {/* Titre et description de l'événement */}
+    <h3 className="text-xl font-bold text-gray-900 mb-2">{event.title}</h3>
+    <p className="text-gray-600 text-sm line-clamp-2">{event.description || "Pas de description"}</p>
+  </div>
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border font-semibold text-xs whitespace-nowrap ${statusBadge.color} transition-all`}>
                   {statusBadge.icon}
                   {statusBadge.text}

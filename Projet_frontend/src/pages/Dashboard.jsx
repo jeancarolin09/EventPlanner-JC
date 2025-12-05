@@ -87,22 +87,22 @@ const MiniSidebar = ({
     const { counts } = useNotifications(10000);
 
     const navItems = [
-        { id: "discovery", icon: Home },
-        { id: "my-event", icon: Calendar, badge: hasUpcomingEventAlert ? "!" : null },
-        { id: "messages", icon: MessageCircle, badge: counts.messages },
-        { id: "invitations", icon: Mail, badge: counts.invitations },
-        { id: "activity", icon: Activity, badge: counts.activities },
+        { id: "discovery", icon: Home, label: "Découverte" },
+        { id: "my-event", icon: Calendar,label: "Mes événements", badge: hasUpcomingEventAlert ? "!" : null },
+        { id: "messages", icon: MessageCircle, label: "Messages", badge: counts.messages },
+        { id: "invitations", icon: Mail, label: "Invitations", badge: counts.invitations },
+        { id: "activity", icon: Activity, label: "Activités", badge: counts.activities },
     ];
 
     return (
-        <aside className="fixed pt-10 left-0 h-screen w-24 bg-transparent p-6 flex flex-col items-center z-50">
+        <aside className="fixed pt-10 left-0 h-screen w-24 bg-transparent p-6 flex flex-col items-center overflow-visible z-50">
             <nav className="flex flex-col items-center gap-6 pt-35 w-full">
                 {navItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
 
                     return (
-                        <div key={item.id} className="relative">
+                        <div key={item.id} className="relative group overflow-visible">
                             <button
                                 onClick={() => setActiveTab(item.id)}
                                 className={`
@@ -120,17 +120,46 @@ const MiniSidebar = ({
                                 <Icon size={22} />
                                  {item.badge > 0 && <NotificationBadge count={item.badge} />}
                             </button>
+                             {/* 🟣 Tooltip */}
+                            <div className="
+                            absolute left-16 top-1/2 -translate-y-1/2
+    opacity-0 pointer-events-none
+    group-hover:opacity-100 group-hover:pointer-events-auto
+    transition-all duration-200
+    bg-gray-900 text-white text-xs font-semibold 
+    px-3 py-1 rounded-lg shadow-lg whitespace-nowrap
+    **z-[100]**
+                            ">
+                                {item.label}
+                            </div>
                         </div>
                     );
                 })}
             </nav>
 
-            <button
-                onClick={handleLogout}
-                className="flex items-center justify-center w-full h-14 text-gray-500 hover:text-red-600 hover:scale-105 transition-all duration-200 mt-auto bg-transparent pb-20"
-            >
-                <ChevronLeft size={24} />
-            </button>
+             {/* Logout button with tooltip */}
+            <div className="relative group mt-auto pb-20">
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center justify-center w-full h-14 
+                               text-gray-500 hover:text-red-600 hover:scale-105 transition-all duration-200"
+                >
+                    <ChevronLeft size={24} />
+                </button>
+
+                {/* Tooltip logout */}
+                <div className="
+                   absolute left-16 top-1/2 -translate-y-1/2
+                    opacity-0 pointer-events-none 
+                    group-hover:opacity-100 group-hover:pointer-events-auto
+                    transition-all duration-200
+                    bg-gray-900 text-white text-xs font-semibold 
+                    px-3 py-1 rounded-lg shadow-lg whitespace-nowrap
+                    **z-[100]**
+                ">
+                    Déconnexion
+                </div>
+            </div>
         </aside>
     );
 };
@@ -143,7 +172,7 @@ const getEventImage = (event) => {
 };
 
 // --- Card d'événement réutilisable ---
-const EventDiscoveryCard = ({ event, onDetailsClick, onDeleteClick, onLikeToggle }) => {
+const EventDiscoveryCard = ({ event, onDetailsClick, onDeleteClick, onLikeToggle, onBookmarkToggle}) => {
     const eventDate = event.event_date
         ? new Date(event.event_date).toLocaleDateString("fr-FR", {
               month: "long",
@@ -159,7 +188,8 @@ const EventDiscoveryCard = ({ event, onDetailsClick, onDeleteClick, onLikeToggle
     const likesCount = event.likes_count || 0; 
     const hasLiked = event.has_liked || false; 
     const commentsCount = event.comments_count || 0;
-
+    const bookmarksCount = event.bookmarks_count || 0;
+    const hasBookmarked = event.has_bookmarked || false;
     return (
         <div className="group relative overflow-hidden rounded-3xl bg-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
         onClick={() => onDetailsClick(event.id)}
@@ -171,16 +201,39 @@ const EventDiscoveryCard = ({ event, onDetailsClick, onDeleteClick, onLikeToggle
                         alt={event.title}
                         className="absolute inset-0 w-full h-full object-cover"
                     />
+                    
                     <div className="absolute inset-0 bg-gradient-to-t" />
                 </div>
             </div>
+
 
             <div className="p-2 flex flex-col gap-0 h-full">
                 <div className="flex justify-between items-start gap-2 px-2 ">
                     <h5 className="text-lg  font-bold text-gray-900 line-clamp-2 flex-1">
                         {event.title}
                     </h5>
-                </div>
+               
+                
+        <button
+            onClick={(e) => { 
+                e.stopPropagation(); 
+                onBookmarkToggle(event.id); 
+            }}
+            className={`
+                flex items-center gap-1.5 font-semibold transition
+                ${hasBookmarked ? "text-yellow-500" : "text-gray-500 hover:text-yellow-500"}
+            `}
+        >
+            <Bookmark 
+                size={20} 
+                fill={hasBookmarked ? "currentColor" : "none"} 
+            />
+            <span>{bookmarksCount}</span>
+            
+            </button>
+
+        </div>
+
 
                 <div className="flex items-center gap-1 text-sm text-gray-600 px-2">
                     <MapPinIcon size={16} className="text-purple-500 flex-shrink-0" />
@@ -231,6 +284,7 @@ const DiscoveryFeed = ({
     onDetailsClick, 
     onDeleteClick, 
     onLikeToggle, 
+    onBookmarkToggle, 
     navigate,
     searchTitle,
     setSearchTitle,
@@ -263,7 +317,7 @@ const DiscoveryFeed = ({
                 <div className="flex-1 flex items-center border border-gray-300 rounded-3xl px-5 py-3 hover:border-purple-400 transition-colors">
                     <Calendar size={20} className="text-gray-500 mr-3" />
                     <input
-                        type="text"
+                        type="date"
                         placeholder="Search by date..."
                         value={searchDate}
                         onChange={e => setSearchDate(e.target.value)}
@@ -287,13 +341,13 @@ const DiscoveryFeed = ({
         <div>
             <h2 className="text-3xl font-bold text-gray-900">Upcoming events</h2>
             
-             <button
+             {/* <button
         onClick={() => navigate("/map")}
         className="px-5 py-2 rounded-2 bg-purple-100 text-purple-700 font-semibold 
                    hover:bg-purple-200 transition"
     >
         Voir sur la carte 🗺️
-    </button>
+    </button> */}
 
         </div>
         
@@ -311,6 +365,7 @@ const DiscoveryFeed = ({
                         onDetailsClick={onDetailsClick}
                         onLikeToggle={onLikeToggle}
                         onDeleteClick={onDeleteClick}
+                        onBookmarkToggle={onBookmarkToggle}
                     />
                 ))}
             </div>
@@ -382,7 +437,7 @@ function Dashboard() {
     const filteredEvents = discoveryEvents.filter(event => {
         const matchesTitle = event.title.toLowerCase().includes(searchTitle.toLowerCase());
         const matchesLocation = searchLocation === "" || (event.event_location?.toLowerCase().includes(searchLocation.toLowerCase()));
-        const matchesDate = searchDate === "" || (event.event_date && new Date(event.event_date).toLocaleDateString().includes(searchDate));
+        const matchesDate = searchDate === "" || (event.event_date && event.event_date.startsWith(searchDate)); // Compare YYYY-MM-DD
         return matchesTitle && matchesLocation && matchesDate;
     });
 
@@ -425,6 +480,38 @@ function Dashboard() {
             alert("Erreur lors de l'interaction.");
         }
     };
+
+   const handleBookmarkToggle = async (eventId) => {
+    if (!user) {
+        alert("Vous devez être connecté pour interagir !");
+        navigate("/login");
+        return;
+    }
+
+    try {
+        const jwt = localStorage.getItem("jwt");
+
+        const response = await fetch(`http://localhost:8000/api/events/${eventId}/bookmark`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${jwt}`,
+            },
+        });
+
+        const data = await response.json();
+
+        // 🔄 Mise à jour des événements
+        refetchDiscoveryEvents();
+        refetchMyEvents();
+
+    } catch (error) {
+        console.error("Erreur lors du bookmark :", error);
+    }
+};
+
+
+
 
     const handleLogout = () => {
         logout();
@@ -503,6 +590,7 @@ function Dashboard() {
                             events={filteredEvents}
                             onDetailsClick={handleEventDetails}
                             onLikeToggle={handleLikeToggle}
+                            onBookmarkToggle={handleBookmarkToggle}
                             navigate={navigate}
                             searchTitle={searchTitle}
                             setSearchTitle={setSearchTitle}

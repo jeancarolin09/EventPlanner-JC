@@ -5,21 +5,22 @@ import { useAuth } from "../context/AuthContext";
 import { Calendar, LogOut, User, Settings, Bell, Zap } from "lucide-react";
 
 // 🔥 Composant Avatar 100% corrigé (point vert ok partout)
-const Avatar = ({ user, size = "10", showOnlineStatus = true }) => {
+const Avatar = ({ user, size = 50, showOnlineStatus = true }) => {
     const isOnline = user?.isOnline === true;
-    const dimensionClass = `w-${size} h-${size}`;
 
     return (
-        <div className={`relative ${dimensionClass}`}>
+        <div style={{ width: size, height: size }} className="relative">
             {user?.profilePicture ? (
                 <img
                     src={`http://localhost:8000${user.profilePicture}`}
                     alt={user?.name}
-                    className={`rounded-full object-cover border-2 border-white shadow-md ${dimensionClass}`}
+                    style={{ width: size, height: size }}
+                    className="rounded-full object-cover border-2 border-white shadow-md"
                 />
             ) : (
                 <div
-                    className={`rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold flex items-center justify-center border-2 border-white shadow-md ${dimensionClass}`}
+                    style={{ width: size, height: size }}
+                    className="rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold flex items-center justify-center border-2 border-white shadow-md"
                 >
                     {user?.name ? user.name.charAt(0).toUpperCase() : "?"}
                 </div>
@@ -31,6 +32,7 @@ const Avatar = ({ user, size = "10", showOnlineStatus = true }) => {
         </div>
     );
 };
+
 
 const Header = () => {
     const { data } = useContext(AppContext);
@@ -101,7 +103,7 @@ const Header = () => {
                 {/* Avatar + menu */}
                 <div className="relative" ref={menuRef}>
                     <div className="relative cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
-    <Avatar user={user} size="10" />
+    <Avatar user={user} size={50} />
 </div>
 
 
@@ -110,7 +112,7 @@ const Header = () => {
                             
                             {/* Info utilisateur */}
                             <div className="flex items-center gap-3 p-4 bg-gray-100/80 border-b border-gray-700/30">
-                                <Avatar user={user} size="10" />
+                                <Avatar user={user} size={40} />
                                 <div className="flex flex-col truncate">
                                     <p className="text-xs text-gray-800">Connecté(e) :</p>
                                     <p className="text-sm font-semibold text-black truncate max-w-[150px]">{user?.name}</p>
@@ -124,7 +126,7 @@ const Header = () => {
                                     onClick={() => { setMenuOpen(false); navigate("/profile"); }}
                                     className="flex items-center gap-3 px-4 py-3 text-gray-800 hover:bg-gray-200 transition"
                                 >
-                                    <User className="w-5 h-5 text-purple-700" /> Modifier le profil
+                                    <User className="w-5 h-5 text-purple-700" /> Mon profil
                                 </button>
 
                                 <button
